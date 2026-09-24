@@ -7,37 +7,31 @@ public class PaddleBehavior : MonoBehaviour
     public KeyCode LeftDirection = KeyCode.LeftArrow;
     public KeyCode RightDirection = KeyCode.RightArrow;
 
+    private Rigidbody2D rb;
+    private float direction;
+
     void Start()
     {
-        
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        float movement = 0.0f;
+        direction = 0.0f;
 
-        if(Input.GetKey(RightDirection))
+        if (Input.GetKey(RightDirection))
         {
-            movement += Speed;
+            direction += 1.0f;
         }
 
-        if(Input.GetKey(LeftDirection))
+        if (Input.GetKey(LeftDirection))
         {
-            movement -= Speed;
+            direction -= 1.0f;
         }
+    }
 
-        movement *= Time.deltaTime;
-
-        transform.Translate(movement, 0.0f, 0.0f);
-
-        if(transform.position.x < -6.5f)
-        {
-            transform.position = new Vector3(-6.5f, transform.position.y, transform.position.z);
-        }
-
-        if(transform.position.x > 6.5f)
-        {
-            transform.position = new Vector3(6.5f, transform.position.y, transform.position.z);
-        }
+    void FixedUpdate()
+    {
+        rb.linearVelocityX = direction * Speed;
     }
 }

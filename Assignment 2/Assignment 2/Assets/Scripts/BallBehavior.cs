@@ -1,78 +1,62 @@
 using UnityEngine;
 
+using UnityEngine;
+
 public class BallBehavior : MonoBehaviour
 {
-    public float Speed = 5.0f;
+    public float LaunchForce = 5.0f;
+    public float SpeedIncrement = 1.05f;
+    public float PaddleInfluence = 0.2f;
 
-    public float xDirection;
-    public float yDirection;
+    private Rigidbody2D _rb;
 
     void Start()
     {
-        // Random starting position
-        transform.position = new Vector3(
-            Random.Range(-6.0f, 6.0f),
-            transform.position.y,
-            transform.position.z
-        );
+        _rb = GetComponent<Rigidbody2D>();
 
-        // Random starting direction
-        xDirection = Random.Range(0, 2);
-
-        if(xDirection == 0)
-        {
-            xDirection = -1;
-        }
-
-        yDirection = Random.Range(0, 2);
-
-        if(yDirection == 0)
-        {
-            yDirection = -1;
-        }
+        LaunchBall();
     }
 
-    void Update()
+    void LaunchBall()
     {
-        float velocityX = Speed * xDirection;
-        float velocityY = Speed * yDirection;
+        Vector2 direction = new Vector2(
+            GetNonZeroRandomFloat(),
+            GetNonZeroRandomFloat()
+        ).normalized;
 
-        float movementX = velocityX * Time.deltaTime;
-        float movementY = velocityY * Time.deltaTime;
+        _rb.AddForce(direction * LaunchForce, ForceMode2D.Impulse);
+    }
+float GetNonZeroRandomFloat()
+{
+    float num;
 
-        transform.Translate(movementX, movementY, 0.0f);
+    do
+    {
+        num = Random.Range(-1.0f, 1.0f);
+    }
+    while (Mathf.Approximately(num, 0.0f));
 
-        if(transform.position.x > 7.0f)
+    return num;
+}
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Paddle"))
         {
-            xDirection *= -1;
+            if (!Mathf.Approximately(
+                other.rigidbody.linearVelocity.x, 0.0f))
+            {
+                Vector2 direction =
+                    _rb.linearVelocity * (1 - PaddleInfluence)
+                    + other.rigidbody.linearVelocity
+                    * PaddleInfluence;
 
-            transform.position = new Vector3(
-                7.0f,
-                transform.position.y,
-                transform.position.z
-            );
-        }
-
-        if(transform.position.x < -7.0f)
-        {
-            xDirection *= -1;
-
-            transform.position = new Vector3(
-                -7.0f,
-                transform.position.y,
-                transform.position.z
-            );
-        }
-
-        if(transform.position.y > 4.0f)
-        {
-            yDirection *= -1;
-
-            transform.position = new Vector3(
-                transform.position.x,
-                4.0f,
-                transform.position.z
-            );
+                _rb.linearVelocity =
+                    _rb.linearVelocity.magnitude
+                    * direction.normalized
+                    * SpeedIncrement;
+            }
         }
     }
+
 }
